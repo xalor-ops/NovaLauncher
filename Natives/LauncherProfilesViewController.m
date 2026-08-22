@@ -76,7 +76,7 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
             }]
     ]];
     self.createButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd menu:createMenu];
-    if(@available(iOS 19.0, *)) {
+    if(@available(iOS 16.0, *)) {
         self.createButtonItem.sharesBackground = NO;
     }
 
