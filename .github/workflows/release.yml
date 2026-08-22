@@ -14,122 +14,44 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install dependencies
-        shell: bash
+      - name: Install build dependencies
         run: |
           brew update
-          brew install make wget
+          brew install gnu-make
 
-      - name: Download iOS JRE 8
-        shell: bash
+      - name: Show environment
         run: |
-          mkdir -p depends
-          cd depends
+          sw_vers
+          xcodebuild -version
+          gmake --version
 
-          echo "Downloading JRE 8..."
-
-          curl -L \
-            "https://nightly.link/PojavLauncherTeam/android-openjdk-build-multiarch/workflows/build/buildjre8/jre8-ios-aarch64.zip" \
-            -o jre8-ios-aarch64.zip
-
-          unzip -o jre8-ios-aarch64.zip
-          rm jre8-ios-aarch64.zip
-
-      - name: Download iOS JRE 17
-        shell: bash
+      - name: Prepare Java dependencies
         run: |
-          cd depends
-
-          echo "Downloading JRE 17..."
-
-          curl -L \
-            "https://nightly.link/PojavLauncherTeam/android-openjdk-build-multiarch/workflows/build/buildjre17-21/jre17-ios-aarch64.zip" \
-            -o jre17-ios-aarch64.zip
-
-          unzip -o jre17-ios-aarch64.zip
-          rm jre17-ios-aarch64.zip
-
-      - name: Download iOS JRE 21
-        shell: bash
-        run: |
-          cd depends
-
-          echo "Downloading JRE 21..."
-
-          curl -L \
-            "https://nightly.link/PojavLauncherTeam/android-openjdk-build-multiarch/workflows/build/buildjre17-21/jre21-ios-aarch64.zip" \
-            -o jre21-ios-aarch64.zip
-
-          unzip -o jre21-ios-aarch64.zip
-          rm jre21-ios-aarch64.zip
-
-      - name: Prepare JRE directories
-        shell: bash
-        run: |
-          cd depends
-
-          echo "Contents of depends:"
-          find . -maxdepth 2 -type f | head -100
-
-          mkdir -p java-8-openjdk
-          mkdir -p java-17-openjdk
-          mkdir -p java-21-openjdk
-
-          for archive in jre8-*.tar.xz; do
-            if [ -f "$archive" ]; then
-              tar -xf "$archive" -C java-8-openjdk
-              break
-            fi
-          done
-
-          for archive in jre17-*.tar.xz; do
-            if [ -f "$archive" ]; then
-              tar -xf "$archive" -C java-17-openjdk
-              break
-            fi
-          done
-
-          for archive in jre21-*.tar.xz; do
-            if [ -f "$archive" ]; then
-              tar -xf "$archive" -C java-21-openjdk
-              break
-            fi
-          done
-
-      - name: Check JRE installation
-        shell: bash
-        run: |
-          echo "JRE 8:"
-          find depends/java-8-openjdk -maxdepth 2 -type f | head -20 || true
-
-          echo "JRE 17:"
-          find depends/java-17-openjdk -maxdepth 2 -type f | head -20 || true
-
-          echo "JRE 21:"
-          find depends/java-21-openjdk -maxdepth 2 -type f | head -20 || true
+          echo "Preparing Java 8, Java 17 and Java 21..."
+          gmake jre
 
       - name: Build iOS IPA
-        shell: bash
+        env:
+          RUNNER: 1
         run: |
           export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-          export RUNNER=1
 
-          echo "Building PojavLauncher iOS IPA..."
+          echo "Building iOS IPA..."
 
           gmake -j"$(sysctl -n hw.ncpu)" \
             dsym \
             package \
             PLATFORM=2
 
-      - name: Find generated IPA
-        shell: bash
+      - name: Show build artifacts
+        if: always()
         run: |
-          echo "Generated files:"
-          find artifacts -type f -print
+          echo "Artifacts:"
+          find artifacts -maxdepth 3 -type f -print 2>/dev/null || true
 
           echo ""
           echo "IPA files:"
-          find artifacts -type f -name "*.ipa" -print
+          find artifacts -type f -name "*.ipa" -print 2>/dev/null || true
 
       - name: Upload iOS IPA
         uses: actions/upload-artifact@v4
