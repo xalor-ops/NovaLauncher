@@ -145,6 +145,24 @@ jobs:
 
           echo "JRE 21 downloaded."
 
+      - name: Get JRE25
+        shell: bash
+        run: |
+          set -e
+
+          cd depends
+
+          echo "Downloading iOS Java 25 runtime..."
+
+          curl -L --fail --retry 3 \
+            "https://assets.angelauramc.dev/openjdk/ios-arm64/jre25-ios-aarch64.zip" \
+            -o jre25-ios-aarch64.zip
+
+          unzip -o jre25-ios-aarch64.zip
+          rm -f jre25-ios-aarch64.zip
+
+          echo "JRE 25 downloaded."
+
       - name: Verify Java runtime archives
         shell: bash
         run: |
@@ -164,6 +182,10 @@ jobs:
           echo ""
           echo "JRE 21:"
           ls -lah depends/java-21-openjdk 2>/dev/null || true
+
+          echo ""
+          echo "JRE 25:"
+          ls -lah depends/java-25-openjdk 2>/dev/null || true
 
       - name: Build iOS IPA
         shell: bash
