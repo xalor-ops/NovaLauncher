@@ -1,69 +1,107 @@
-name: Build iOS IPA
+name: Release build
 
 on:
-  workflow_dispatch:
+  workflow_dispatch
 
 jobs:
-  build-ios:
-    name: Build iOS IPA
+  build:
+    name: iOS IPA Release
     runs-on: macos-14
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
+
+      - name: Checkout repository submodules
+        run: git submodule update --init --recursive
+
+      - name: Get gl4es latest commit hash
+        id: gl4es-sha
+        run: echo "::set-output name=sha::$(echo $(git ls-remote https://github.com/PojavLauncherTeam/gl4es-114-extra refs/heads/master | grep -io '^\S*'))"
+        shell: bash
+
+      - name: Cache gl4es
+        uses: actions/cache@main
+        if: false
+        id: gl4es-cache
         with:
-          submodules: recursive
+          path: gl4es/libs
+          key: gl4es-holy-ios-shared-2-${{ steps.gl4es-sha.outputs.sha }}
 
-      - name: Install build dependencies
-        run: |
-          brew update
-          brew install gnu-make
+      - name: Get gl4es
+        if: false && steps.gl4es-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@main
+        with:
+          repository: 'PojavLauncherTeam/gl4es-114-extra'
+          path: 'gl4es'
 
-      - name: Show environment
+      - name: Build gl4es
+        if: false && steps.gl4es-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
         run: |
-          sw_vers
-          xcodebuild -version
-          gmake --version
+          cd gl4es
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git config --global user.name "github-actions"
+          export PATH=/opt/procursus/bin:$PATH
+          wget https://github.com/leetal/ios-cmake/raw/master/ios.toolchain.cmake
+          cmake -B build -DCMAKE_TOOLCHAIN_FILE=ios.toolchain.cmake -DDEFAULT_ES=2 \
+            -DNOX11=ON -DNOEGL=OFF -DSTATICLIB=OFF -DPLATFORM=OS64 \
+            -DCMAKE_C_FLAGS=-Wno-error=implicit-function-declaration
+          cmake --build build --config RelWithDebInfo --target GL
+          cp -R lib/libGL.dylib ../Natives/resources/Frameworks/libgl4es_114.dylib
 
-      - name: Prepare Java dependencies
-        run: |
-          echo "Preparing Java 8, Java 17 and Java 21..."
-          gmake jre
+      - name: Get JRE8
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build.yml
+          path: depends
+          workflow_conclusion: success
+          allow_forks: false
+          repo: PojavLauncherTeam/android-openjdk-build-multiarch
+          branch: buildjre8
+          name: jre8-ios-aarch64
+
+      - name: Get JRE17
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build.yml
+          path: depends
+          workflow_conclusion: success
+          allow_forks: false
+          repo: PojavLauncherTeam/android-openjdk-build-multiarch
+          branch: buildjre17-21
+          name: jre17-ios-aarch64
+
+      - name: Get JRE21
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build.yml
+          path: depends
+          workflow_conclusion: completed
+          allow_forks: false
+          repo: PojavLauncherTeam/android-openjdk-build-multiarch
+          branch: buildjre17-21
+          name: jre21-ios-aarch64
 
       - name: Build iOS IPA
-        env:
-          RUNNER: 1
         run: |
-          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+          export PATH=/opt/procursus/bin:/opt/homebrew/bin:$PATH
+          export RUNNER=1
 
-          echo "Building iOS IPA..."
-
-          gmake -j"$(sysctl -n hw.ncpu)" \
-            dsym \
-            package \
-            PLATFORM=2
-
-      - name: Show build artifacts
-        if: always()
-        run: |
-          echo "Artifacts:"
-          find artifacts -maxdepth 3 -type f -print 2>/dev/null || true
-
-          echo ""
-          echo "IPA files:"
-          find artifacts -type f -name "*.ipa" -print 2>/dev/null || true
+          gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=2
 
       - name: Upload iOS IPA
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@main
         with:
           name: NovaLauncher-iOS-IPA
-          path: artifacts/*.ipa
-          if-no-files-found: error
+          path: artifacts/net.kdt.pojavlauncher-*-ios.ipa
 
-      - name: Upload dSYM
-        uses: actions/upload-artifact@v4
+      - name: Upload PojavLauncher.dSYM
+        uses: actions/upload-artifact@main
         if: always()
         with:
-          name: NovaLauncher-iOS-dSYM
+          name: PojavLauncher.dSYM
           path: artifacts/PojavLauncher.dSYM
-          if-no-files-found: ignore
