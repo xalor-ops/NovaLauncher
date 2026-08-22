@@ -54,8 +54,10 @@
     
     self.isInitialVc = YES;
     
-    UIImageView *titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppLogo"]];
-    [titleView setContentMode:UIViewContentModeScaleAspectFit];
+    UILabel *titleView = [[UILabel alloc] init];
+    titleView.text = @"NOVA";
+    titleView.font = [UIFont systemFontOfSize:19 weight:UIFontWeightBlack];
+    titleView.textColor = UIColor.labelColor;
     self.navigationItem.titleView = titleView;
     [titleView sizeToFit];
     
@@ -66,18 +68,22 @@
     ].mutableCopy;
     if (realUIIdiom != UIUserInterfaceIdiomTV) {
         [self.options addObject:(id)[LauncherMenuCustomItem
-                                     title:localize(@"launcher.menu.custom_controls", nil)
-                                     imageName:@"MenuCustomControls" action:^{
+                                     title:@"Custom Controls"
+                                     imageName:@"gamecontroller.fill" action:^{
             [contentNavigationController performSelector:@selector(enterCustomControls)];
         }]];
     }
-    [self.options addObject:
-     (id)[LauncherMenuCustomItem
-          title:localize(@"launcher.menu.execute_jar", nil)
-          imageName:@"MenuInstallJar" action:^{
+    [self.options addObject:(id)[LauncherMenuCustomItem
+                                 title:@"Install JAR"
+                                 imageName:@"shippingbox.fill" action:^{
         [contentNavigationController performSelector:@selector(enterModInstaller)];
     }]];
-    
+    [self.options addObject:(id)[LauncherMenuCustomItem
+                                 title:@"CurseForge Mods"
+                                 imageName:@"puzzlepiece.extension.fill" action:^{
+        openLink(self, [NSURL URLWithString:@"https://www.curseforge.com/minecraft/search?class=mc-mods"]);
+    }]];
+
     // TODO: Finish log-uploading service integration
     [self.options addObject:
      (id)[LauncherMenuCustomItem
@@ -114,6 +120,12 @@
     }
     
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.tableView.backgroundColor = UIColor.systemGroupedBackgroundColor;
+    self.tableView.contentInset = UIEdgeInsetsMake(10, 0, 10, 0);
+    self.tableView.rowHeight = 58;
+    if (@available(iOS 15.0, *)) {
+        self.tableView.sectionHeaderTopPadding = 0;
+    }
     
     self.navigationController.toolbarHidden = NO;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
@@ -130,10 +142,10 @@
     
     [self updateAccountInfo];
     
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
     [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
     [self tableView:self.tableView didSelectRowAtIndexPath:indexPath];
-    self.lastSelectedIndex = 1;
+    self.lastSelectedIndex = 0;
     
     if (getEntitlementValue(@"get-task-allow")) {
         [self displayProgress:localize(@"login.jit.checking", nil)];
@@ -199,6 +211,12 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
     }
 
+    cell.backgroundColor = UIColor.clearColor;
+    cell.textLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
+    cell.textLabel.textColor = UIColor.labelColor;
+    cell.imageView.tintColor = UIColor.systemIndigoColor;
+    cell.accessoryType = UITableViewCellAccessoryNone;
+    cell.layer.cornerRadius = 14;
     cell.textLabel.text = [self.options[indexPath.row] title];
     
     UIImage *origImage = [UIImage systemImageNamed:[self.options[indexPath.row]
