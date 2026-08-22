@@ -19,6 +19,7 @@
 #import "utils.h"
 
 #import <objc/runtime.h>
+#include <dlfcn.h>
 #include <sys/time.h>
 
 #define AUTORESIZE_MASKS UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin
@@ -49,6 +50,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     }
     UIToolbar *targetToolbar = self.toolbar;
+    BOOL (*_UISolariumEnabled)(void) = dlsym(RTLD_DEFAULT, "_UISolariumEnabled");
     BOOL hasLiquidGlass = _UISolariumEnabled && _UISolariumEnabled();
     
     if(hasLiquidGlass) {
