@@ -1,7 +1,7 @@
 name: Release build
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   build:
@@ -10,121 +10,203 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Checkout repository submodules
-        run: git submodule update --init --recursive
-
-      - name: Get gl4es latest commit hash
-        id: gl4es-sha
-        run: echo "::set-output name=sha::$(echo $(git ls-remote https://github.com/PojavLauncherTeam/gl4es-114-extra refs/heads/master | grep -io '^\S*'))"
-        shell: bash
-
-      - name: Cache gl4es
-        uses: actions/cache@main
-        if: false
-        id: gl4es-cache
-        with:
-          path: gl4es/libs
-          key: gl4es-holy-ios-shared-2-${{ steps.gl4es-sha.outputs.sha }}
-
-      - name: Get gl4es
-        if: false && steps.gl4es-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@main
-        with:
-          repository: 'PojavLauncherTeam/gl4es-114-extra'
-          path: 'gl4es'
-
-      - name: Build gl4es
-        if: false && steps.gl4es-cache.outputs.cache-hit != 'true'
-        continue-on-error: true
         run: |
-          cd gl4es
-          git config --global user.email "github-actions@users.noreply.github.com"
-          git config --global user.name "github-actions"
-          export PATH=/opt/procursus/bin:$PATH
-          wget https://github.com/leetal/ios-cmake/raw/master/ios.toolchain.cmake
-          cmake -B build -DCMAKE_TOOLCHAIN_FILE=ios.toolchain.cmake -DDEFAULT_ES=2 \
-            -DNOX11=ON -DNOEGL=OFF -DSTATICLIB=OFF -DPLATFORM=OS64 \
-            -DCMAKE_C_FLAGS=-Wno-error=implicit-function-declaration
-          cmake --build build --config RelWithDebInfo --target GL
-          cp -R lib/libGL.dylib ../Natives/resources/Frameworks/libgl4es_114.dylib
+          git submodule update --init --recursive
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -e
+
+          brew update
+
+          brew install \
+            make \
+            cmake \
+            wget \
+            ldid
+
+          brew install --cask zulu@8
+
+      - name: Configure Java 8
+        shell: bash
+        run: |
+          set -e
+
+          echo "Installed Java versions:"
+          /usr/libexec/java_home -V || true
+
+          JDK8_HOME="$(/usr/libexec/java_home -v 1.8)"
+
+          if [ ! -x "$JDK8_HOME/bin/javac" ]; then
+            echo "ERROR: Java 8 JDK was not found."
+            exit 1
+          fi
+
+          echo "Using JDK 8:"
+          echo "$JDK8_HOME"
+
+          echo "JAVA_HOME=$JDK8_HOME" >> "$GITHUB_ENV"
+          echo "BOOTJDK=$JDK8_HOME/bin" >> "$GITHUB_ENV"
+
+          echo "$JDK8_HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Verify build tools
+        shell: bash
+        run: |
+          set -e
+
+          echo "Architecture:"
+          uname -m
+
+          echo ""
+          echo "GNU Make:"
+          gmake --version
+
+          echo ""
+          echo "CMake:"
+          cmake --version
+
+          echo ""
+          echo "Wget:"
+          wget --version | head -1
+
+          echo ""
+          echo "ldid:"
+          ldid -V || true
+
+          echo ""
+          echo "Java:"
+          java -version
+
+          echo ""
+          echo "Javac:"
+          javac -version
+
+          echo ""
+          echo "BOOTJDK:"
+          echo "$BOOTJDK"
 
       - name: Get JRE8
+        shell: bash
         run: |
+          set -e
+
           mkdir -p depends
           cd depends
+
+          echo "Downloading iOS Java 8 runtime..."
 
           curl -L --fail --retry 3 \
             "https://assets.angelauramc.dev/openjdk/ios-arm64/jre8-ios-aarch64.zip" \
             -o jre8-ios-aarch64.zip
 
           unzip -o jre8-ios-aarch64.zip
-          rm jre8-ios-aarch64.zip
+          rm -f jre8-ios-aarch64.zip
+
+          echo "JRE 8 downloaded."
 
       - name: Get JRE17
+        shell: bash
         run: |
+          set -e
+
           cd depends
+
+          echo "Downloading iOS Java 17 runtime..."
 
           curl -L --fail --retry 3 \
             "https://assets.angelauramc.dev/openjdk/ios-arm64/jre17-ios-aarch64.zip" \
             -o jre17-ios-aarch64.zip
 
           unzip -o jre17-ios-aarch64.zip
-          rm jre17-ios-aarch64.zip
+          rm -f jre17-ios-aarch64.zip
+
+          echo "JRE 17 downloaded."
 
       - name: Get JRE21
+        shell: bash
         run: |
+          set -e
+
           cd depends
+
+          echo "Downloading iOS Java 21 runtime..."
 
           curl -L --fail --retry 3 \
             "https://assets.angelauramc.dev/openjdk/ios-arm64/jre21-ios-aarch64.zip" \
             -o jre21-ios-aarch64.zip
 
           unzip -o jre21-ios-aarch64.zip
-          rm jre21-ios-aarch64.zip
+          rm -f jre21-ios-aarch64.zip
 
-      - name: Check Java dependencies
-        run: |
-          echo "Java dependency files:"
-          find depends -maxdepth 3 -type f | head -100
+          echo "JRE 21 downloaded."
 
-      - name: Install GNU Make
+      - name: Verify Java runtime archives
+        shell: bash
         run: |
-          brew install make
+          set -e
 
-      - name: Verify GNU Make
-        run: |
-          gmake --version
+          echo "Contents of depends:"
+          find depends -maxdepth 2 -type f -print
+
+          echo ""
+          echo "JRE 8:"
+          ls -lah depends/java-8-openjdk 2>/dev/null || true
+
+          echo ""
+          echo "JRE 17:"
+          ls -lah depends/java-17-openjdk 2>/dev/null || true
+
+          echo ""
+          echo "JRE 21:"
+          ls -lah depends/java-21-openjdk 2>/dev/null || true
 
       - name: Build iOS IPA
+        shell: bash
+        env:
+          RUNNER: 1
         run: |
-          export PATH=/opt/procursus/bin:/opt/homebrew/bin:$PATH
-          export RUNNER=1
+          set -e
+
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
           echo "Building iOS IPA..."
 
-          gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=2
+          echo "BOOTJDK=$BOOTJDK"
+          "$BOOTJDK/javac" -version
 
-      - name: Find IPA
+          gmake -j"$(sysctl -n hw.ncpu)" \
+            dsym \
+            package \
+            PLATFORM=2 \
+            BOOTJDK="$BOOTJDK"
+
+      - name: Find generated IPA
+        if: always()
+        shell: bash
         run: |
-          echo "Generated artifacts:"
-          find artifacts -type f -print
+          echo "Artifacts directory:"
+          find artifacts -maxdepth 3 -type f -print 2>/dev/null || true
 
-          echo "Generated IPA:"
-          find artifacts -type f -name "*.ipa" -print
+          echo ""
+          echo "IPA files:"
+          find artifacts -type f -name "*.ipa" -print 2>/dev/null || true
 
       - name: Upload iOS IPA
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4
         with:
           name: NovaLauncher-iOS-IPA
-          path: artifacts/net.kdt.pojavlauncher-*-ios.ipa
+          path: artifacts/*.ipa
           if-no-files-found: error
 
-      - name: Upload PojavLauncher.dSYM
-        uses: actions/upload-artifact@main
+      - name: Upload dSYM
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: PojavLauncher.dSYM
-          path: artifacts/PojavLauncher.dSYM
+          name: NovaLauncher-iOS-dSYM
+          path: artifacts/*.dSYM
           if-no-files-found: ignore
