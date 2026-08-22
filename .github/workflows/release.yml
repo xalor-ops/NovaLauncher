@@ -89,10 +89,20 @@ jobs:
           echo "Java dependency files:"
           find depends -maxdepth 3 -type f | head -100
 
+      - name: Install GNU Make
+        run: |
+          brew install make
+
+      - name: Verify GNU Make
+        run: |
+          gmake --version
+
       - name: Build iOS IPA
         run: |
           export PATH=/opt/procursus/bin:/opt/homebrew/bin:$PATH
           export RUNNER=1
+
+          echo "Building iOS IPA..."
 
           gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=2
 
