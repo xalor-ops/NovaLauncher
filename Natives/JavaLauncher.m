@@ -17,6 +17,8 @@
 #import "MinecraftOptionUtils.h"
 #import "PLLogOutputView.h"
 #import "PLProfiles.h"
+#import <mach/mach.h>
+#import <mach/mach_vm.h>
 
 #define fm NSFileManager.defaultManager
 
