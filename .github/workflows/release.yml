@@ -51,40 +51,43 @@ jobs:
           cp -R lib/libGL.dylib ../Natives/resources/Frameworks/libgl4es_114.dylib
 
       - name: Get JRE8
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: build.yml
-          path: depends
-          workflow_conclusion: success
-          allow_forks: false
-          repo: PojavLauncherTeam/android-openjdk-build-multiarch
-          branch: buildjre8
-          name: jre8-ios-aarch64
+        run: |
+          mkdir -p depends
+          cd depends
+
+          curl -L --fail --retry 3 \
+            "https://assets.angelauramc.dev/openjdk/ios-arm64/jre8-ios-aarch64.zip" \
+            -o jre8-ios-aarch64.zip
+
+          unzip -o jre8-ios-aarch64.zip
+          rm jre8-ios-aarch64.zip
 
       - name: Get JRE17
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: build.yml
-          path: depends
-          workflow_conclusion: success
-          allow_forks: false
-          repo: PojavLauncherTeam/android-openjdk-build-multiarch
-          branch: buildjre17-21
-          name: jre17-ios-aarch64
+        run: |
+          cd depends
+
+          curl -L --fail --retry 3 \
+            "https://assets.angelauramc.dev/openjdk/ios-arm64/jre17-ios-aarch64.zip" \
+            -o jre17-ios-aarch64.zip
+
+          unzip -o jre17-ios-aarch64.zip
+          rm jre17-ios-aarch64.zip
 
       - name: Get JRE21
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: build.yml
-          path: depends
-          workflow_conclusion: completed
-          allow_forks: false
-          repo: PojavLauncherTeam/android-openjdk-build-multiarch
-          branch: buildjre17-21
-          name: jre21-ios-aarch64
+        run: |
+          cd depends
+
+          curl -L --fail --retry 3 \
+            "https://assets.angelauramc.dev/openjdk/ios-arm64/jre21-ios-aarch64.zip" \
+            -o jre21-ios-aarch64.zip
+
+          unzip -o jre21-ios-aarch64.zip
+          rm jre21-ios-aarch64.zip
+
+      - name: Check Java dependencies
+        run: |
+          echo "Java dependency files:"
+          find depends -maxdepth 3 -type f | head -100
 
       - name: Build iOS IPA
         run: |
@@ -93,11 +96,20 @@ jobs:
 
           gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=2
 
+      - name: Find IPA
+        run: |
+          echo "Generated artifacts:"
+          find artifacts -type f -print
+
+          echo "Generated IPA:"
+          find artifacts -type f -name "*.ipa" -print
+
       - name: Upload iOS IPA
         uses: actions/upload-artifact@main
         with:
           name: NovaLauncher-iOS-IPA
           path: artifacts/net.kdt.pojavlauncher-*-ios.ipa
+          if-no-files-found: error
 
       - name: Upload PojavLauncher.dSYM
         uses: actions/upload-artifact@main
@@ -105,3 +117,4 @@ jobs:
         with:
           name: PojavLauncher.dSYM
           path: artifacts/PojavLauncher.dSYM
+          if-no-files-found: ignore
