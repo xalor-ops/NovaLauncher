@@ -14,12 +14,12 @@ Nova is a Minecraft: Java Edition launcher for Android, iOS, and iPadOS, based o
 Since Nova is a Fork Of Amethyst, The [Amethyst wiki](https://wiki.angelauramc.dev/wiki/getting_started/INSTALL.html#ios) has extensive documentation on how to install, set up, and play! For those who wish to install quickly, here's the basics:
 
 ## Features and Fixes
-New UI- 100%
-Mods Tab In Launcher- 50%
-Fixing Workflows Bugs- 100%
-Fixing Crashing Bugs- 15%
-Optimizing For Better Results- 50%
-(a lot in the future, stay tuned)
+* New UI- 100%
+* Mods Tab In Launcher- 50%
+* Fixing Workflows Bugs- 100%
+* Fixing Crashing Bugs- 15%
+* Optimizing For Better Results- 50%
+* (a lot in the future, stay tuned)
 
 ### Requirements
 At the minimum, you'll need one of the following devices on **iOS 14.0** and later:
