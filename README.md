@@ -19,6 +19,7 @@ Since Nova is a Fork Of Amethyst, The [Amethyst wiki](https://wiki.angelauramc.d
 * Fixing Workflows Bugs- 100%
 * Fixing Crashing Bugs- 15%
 * Optimizing For Better Results- 50%
+* Bringing Launcher To: Android, Windows, iOS- 33.333%
 * (a lot in the future, stay tuned)
 
 ### Requirements
