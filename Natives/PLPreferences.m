@@ -56,7 +56,8 @@
                 }.mutableCopy,
                 @"8": @"internal",
                 @"17": @"internal",
-                @"21": @"internal"
+                @"21": @"internal",
+                @"25": @"internal"
             }.mutableCopy,
             @"java_args": @"",
             @"env_variables": @"",
@@ -173,11 +174,40 @@
             pref[section] = defaults[section];
             continue;
         }
+        NSMutableDictionary *sectionDict = [pref[section] isKindOfClass:NSDictionary.class] ? [pref[section] mutableCopy] : [NSMutableDictionary new];
+        BOOL sectionChanged = NO;
         for (NSString *key in defaults[section].allKeys) {
-            if (pref[section][key]) continue;
-            id value = defaults[section][key];
-            NSDebugLog(@"[PLPreferences] Set default vaule: %@: %@", key, value);
-            pref[section][key] = value;
+            id defaultValue = defaults[section][key];
+            if (!sectionDict[key]) {
+                NSDebugLog(@"[PLPreferences] Set default vaule: %@: %@", key, defaultValue);
+                sectionDict[key] = defaultValue;
+                sectionChanged = YES;
+                continue;
+            }
+            // If both the existing and default values are dictionaries, merge
+            // in any sub-keys the existing value is missing (e.g. a newly
+            // added bundled JRE version) without touching what's already set.
+            // Nested dictionaries loaded from a plist are not guaranteed to
+            // be mutable even though the top-level dictionary is, so we copy
+            // before mutating rather than assuming sectionDict[key] is an
+            // NSMutableDictionary already.
+            if ([defaultValue isKindOfClass:NSDictionary.class] && [sectionDict[key] isKindOfClass:NSDictionary.class]) {
+                NSMutableDictionary *existingValue = [sectionDict[key] mutableCopy];
+                BOOL changed = NO;
+                for (NSString *subKey in [(NSDictionary *)defaultValue allKeys]) {
+                    if (existingValue[subKey]) continue;
+                    NSDebugLog(@"[PLPreferences] Set default sub-value: %@.%@: %@", key, subKey, defaultValue[subKey]);
+                    existingValue[subKey] = defaultValue[subKey];
+                    changed = YES;
+                }
+                if (changed) {
+                    sectionDict[key] = existingValue;
+                    sectionChanged = YES;
+                }
+            }
+        }
+        if (sectionChanged) {
+            pref[section] = sectionDict;
         }
     }
     return pref;
