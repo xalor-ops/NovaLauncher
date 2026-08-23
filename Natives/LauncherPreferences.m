@@ -103,8 +103,10 @@ NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
     NSDictionary<NSString *, NSString *> *selected = pref[@"0"];
     NSString *selectedVer = selected[defaultJRETag];
     if (minVersion > selectedVer.intValue) {
-        NSArray *sortedVersions = [pref.allKeys valueForKeyPath:@"self.integerValue"];
+        NSArray *sortedVersions = [[pref.allKeys valueForKeyPath:@"self.integerValue"]
+            filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self > 0"]];
         sortedVersions = [sortedVersions sortedArrayUsingSelector:@selector(compare:)];
+        selectedVer = nil;
         for (NSNumber *version in sortedVersions) {
             if (version.intValue >= minVersion) {
                 selectedVer = version.stringValue;
