@@ -2,7 +2,7 @@
 ![icon](others/Icon.png)
 
 ## Introduction
-Amethyst is a Minecraft: Java Edition launcher for Android, iOS, and iPadOS, based off of zhuowei's [Boardwalk](https://github.com/zhuowei/Boardwalk) project.
+Nova is a Minecraft: Java Edition launcher for Android, iOS, and iPadOS, based off of zhuowei's [Boardwalk](https://github.com/zhuowei/Boardwalk) project.
 * Supports most versions of Minecraft: Java Edition, from the very first beta to the newest snapshots.
 * Supports Forge, Fabric, OptiFine, and Quilt for you to customize the experience with supported mods.
 * Includes customizable on-screen controls, keyboard and mouse support, and game controller support.
@@ -10,10 +10,16 @@ Amethyst is a Minecraft: Java Edition launcher for Android, iOS, and iPadOS, bas
 * Microsoft account and demo mode support for logging into Minecraft.
 * ...and much more!
 
-This repository contains the code for our iOS and iPadOS port of Amethyst. Looking for [Android?](https://github.com/AngelAuraMC/Amethyst-Android)
-
 ## Getting started with Amethyst
-The [Amethyst wiki](https://wiki.angelauramc.dev/wiki/getting_started/INSTALL.html#ios) has extensive documentation on how to install, set up, and play! For those who wish to install quickly, here's the basics:
+Since Nova is a Fork Of Amethyst, The [Amethyst wiki](https://wiki.angelauramc.dev/wiki/getting_started/INSTALL.html#ios) has extensive documentation on how to install, set up, and play! For those who wish to install quickly, here's the basics:
+
+## Features and Fixes
+New UI- 100%
+Mods Tab In Launcher- 50%
+Fixing Workflows Bugs- 100%
+Fixing Crashing Bugs- 15%
+Optimizing For Better Results- 50%
+(a lot in the future, stay tuned)
 
 ### Requirements
 At the minimum, you'll need one of the following devices on **iOS 14.0** and later:
@@ -35,7 +41,7 @@ Recommended devices provide a smoother and more enjoyable gameplay experience co
 - iOS 17.x and iOS 18.x is supported. However, a computer is required. For more information, please check out [the official wiki](https://wiki.angelauramc.dev/wiki/faq/ios/JIT.html#what-are-the-methods-to-enable-jit)
 
 ### Setting up to sideload
-Amethyst can be sideloaded in many ways. Our recommended solution is to install [TrollStore](https://github.com/opa334/TrollStore) if your iOS version supports it. Installing with TrollStore allows you to permanently sign the application, automatically enable JIT, and increase memory limits.
+Nova can be sideloaded in many ways. Our recommended solution is to install [TrollStore](https://github.com/opa334/TrollStore) if your iOS version supports it. Installing with TrollStore allows you to permanently sign the application, automatically enable JIT, and increase memory limits.
 
 If you cannot, [AltStore](https://altstore.io) and [SideStore](https://sidestore.io) are your next best options.
 - Signing services that do not use your UDID (and use distribution certificates) are not supported, as Amethyst requires capabilities they do not allow. However, if you do managed to gain access to a Development certificate, due to it having the necessary entitlement (being com.apple.security.get-task-allow) to attach a debugger to the running process (enabling JIT), you may use a Development certificate.
@@ -45,22 +51,18 @@ If you cannot, [AltStore](https://altstore.io) and [SideStore](https://sidestore
 
 ### Installing Amethyst
 #### Release build (TrollStore)
-1. Download an IPA of Amethyst in [Releases](https://github.com/AngelAuraMC/Amethyst-iOS/releases).
+1. Download an IPA of Nova in [Releases](https://github.com/xalor-ops/NovaLauncher/releases).
 2. Open the package in TrollStore using the share menu.
 
 #### Release build (AltStore/SideStore trusted source)
 These builds will be available soon, stay tuned.
 
-#### Nightly builds
-*These builds can contain game-breaking bugs. Use with caution.*
-1. Download an IPA build of Amethyst in the [Actions tab](https://github.com/AngelAuraMC/Amethyst-iOS/actions).
-2. Open the downloaded IPA in your sideloading app to install.
 
 #### Nightly builds (AltStore/SideStore trusted sources)
 These builds will be available soon, stay tuned.
 
 ### Enabling JIT
-Amethyst makes use of **just-in-time compilation**, or JIT, to provide usable speeds for the end user. JIT is not supported on iOS without the application being debugged, so workarounds are required to enable it. You can use this chart to determine the best solution for you and your setup.
+Nove makes use of **just-in-time compilation**, or JIT, to provide usable speeds for the end user. JIT is not supported on iOS without the application being debugged, so workarounds are required to enable it. You can use this chart to determine the best solution for you and your setup.
 | Application         | AltStore | SideStore | StikDebug | TrollStore | Jitterbug          | Jailbroken |
 |---------------------|----------|-----------|-----------|------------|--------------------|------------|
 | Requires ext-device | Yes      | Yes (#)   | Yes (#)   | No         | If VPN unavailable | No         |
@@ -71,8 +73,8 @@ Amethyst makes use of **just-in-time compilation**, or JIT, to provide usable sp
 (#) Only the first time.
 
 ## Contributors
-Amethyst is amazing, and surprisingly stable, and it wouldn't be this way without the commmunity that helped and contribute to the project! Some notable names:
-
+Nova is amazing, and surprisingly stable, and it wouldn't be this way without the commmunity that helped and contribute to the project! Some notable names:
+# Amethyst Credits
 @crystall1nedev - Project manager, iOS port developer  
 @khanhduytran0 - iOS port developer  
 @artdeell  
@@ -80,6 +82,8 @@ Amethyst is amazing, and surprisingly stable, and it wouldn't be this way withou
 @zhuowei  
 @jkcoxson   
 @Diatrus 
+# Nova Credits
+@xalor-ops (also known as NexaII) - Launcher Manager, Programer
 
 ## Third party components and their licenses
 - [Caciocavallo](https://github.com/PojavLauncherTeam/caciocavallo): [GNU GPLv2 License](https://github.com/PojavLauncherTeam/caciocavallo/blob/master/LICENSE).
