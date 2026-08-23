@@ -1,5 +1,5 @@
 # Nova Launcher (iOS)
-![icon](others/Icon.png)
+![icon](Others/Icon67.png)
 
 ## Introduction
 Nova is a Minecraft: Java Edition launcher for Android, iOS, and iPadOS, based off of zhuowei's [Boardwalk](https://github.com/zhuowei/Boardwalk) project.
